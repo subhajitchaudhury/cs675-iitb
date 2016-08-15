@@ -51,5 +51,4 @@ Keys                 Operation
   Select the next or previous body part to move using 'q' and 'e' keys respectively.Use u,j,k,h,i,y  to move the selected body part.
   
   
-  
-  Link to report : http://homepages.iitb.ac.in/~urmisadhu/A23.html
+ 
