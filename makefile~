@@ -1,0 +1,3 @@
+all:
+	g++ A21.cpp armList.cpp boxModel.cpp faceList.cpp hat.cpp hip.cpp human.cpp shoulder.cpp torso.cpp -lGL -lGLU -lglut -o A21
+

@@ -1,0 +1,396 @@
+
+#include"human.cpp"
+#include"boxModel.cpp"
+
+float x=0.0f,y=0.1f,z=5.1f;//while providing gluPerspective near and far plane 1,1000 are actually -1,-1000
+float lx=0.0f,ly=.000f,lz=-1.0f;//z +ve axis in out of the screen, -z into the screen
+float mX=0,mY=0,th=20,phi=0;
+float ratio=1.0,k=50.0;//w/h ratio
+int objFlag=0,numObj=15,boxFlag=1;
+char *str=new char[60];;
+
+void render_bitmap_string(float x, float y, float z, void *font, char *string) 
+{  
+  char *c;
+  glRasterPos3f(x, y,z);
+  for (c=string; *c != '\0'; c++) 
+    {
+      glutBitmapCharacter(font, *c);
+    }
+}
+void gInit()
+{
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_NORMALIZE);
+	glClearColor(0.0,0.0,0.0,0.0);
+	
+	GLfloat light_ambient[]={1, 1, 1, 1.0};
+	
+	GLfloat light_diffuse[]={0.7, 0.5, 0.5, 1.0};
+	GLfloat light_specular[]={1.0, 1.0, 1.0, 1.0};
+	GLfloat light_position[]={0.0, 0.0, 10.0, 1.0};
+	GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+   	GLfloat mat_shininess[] = { 100.0 };
+	
+	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+	glLightfv(GL_LIGHT0, GL_POSITION, light_position);	
+	
+	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+   	glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+	
+	glEnable(GL_LIGHT0);
+	
+	glShadeModel(GL_SMOOTH);
+}
+void changeSize(int w, int h)	{
+
+	// Prevent a divide by zero, when window is too short
+	// (you cant make a window of zero width).
+	if(h == 0)
+		h = 1;
+
+	ratio = 1.0f * w / h;
+	// Reset the coordinate system before modifying
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	
+	// Set the viewport to be the entire window
+	glViewport(0, 0, w, h);
+
+	// Set the clipping volume
+	gluPerspective(55,ratio,1,500);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	gluLookAt(x, y, z, 
+		      x + lx,y + ly,z + lz,
+			  0.0f,1.0f,0.0f);
+}
+void orientMe() 
+{
+
+
+	x = k*cos(phi)*cos(th);
+	z = k*sin(phi)*cos(th);
+	y=k*sin(th);
+	lx = -cos(phi)*cos(th);
+	lz = -sin(phi)*cos(th);
+	ly=-sin(th);
+	
+	glLoadIdentity();
+	gluLookAt(x, y, z, 
+		      x+lx,y+ly,z+lz,
+			  0.0f,1.0f,0.0f);
+}
+void inputKey(unsigned char c, int x, int y) 
+{
+	
+	switch (c) 
+	{
+		case 27:exit(0);	
+		case 'a': phi+=0.05;break;//left
+		case 'd': phi-=0.05;break;//right
+		case 'w': th+=0.05;break;//up
+		case 's': th-=0.05;break;//down
+
+		case 'Z': k=k+02;break;
+		case 'z': k=k-02;break;
+
+		case 'q':objFlag=(objFlag+1)%numObj;break;
+		case 'e':objFlag=((objFlag-1)<0?(objFlag-1)+numObj:(objFlag-1))%numObj;break;
+		case 'r':human.initModel("shirt.bmp","skin.bmp","face.bmp","jeans.bmp","palm.bmp","hat.bmp");
+		case 'b':boxFlag=(boxFlag+1)%2;
+		
+		
+		case 'c':
+		
+		if (box.theta>=-90 && box.theta<0)
+		{
+			box.theta+=2;
+		}
+		break;
+
+		case 'o':
+		if (box.theta>-90 && box.theta<=0)
+		{
+			box.theta-=2;
+		}
+		break;
+	
+		
+		
+
+	}
+	if(objFlag==1)//left arm low
+	{
+		str=(char*)("Left lower arm selected");
+		switch (c)
+		{
+			case 'u': 
+			if(human.radioL.thz+0.2<0 && human.radioL.thz+0.2>-150)
+				human.radioL.thz+=02;
+			break;//left
+			case 'j': 
+			if(human.radioL.thz-0.2<0 && human.radioL.thz-0.2>-150)
+				human.radioL.thz-=02;
+			break;//right
+			
+		}
+	}
+	else if(objFlag==0)//left arm 
+	{
+	str=(char*)("Left arm selected");
+	switch (c)
+		{
+			case 'u': human.armL.thx+=02;break;//left
+			case 'j': human.armL.thx-=02;break;//right
+			case 'y': human.armL.thy+=2;break;//up
+			case 'i':human.armL.thy-=2;break;//down
+			case 'h': human.armL.thz+=2;break;//up
+			case 'k':human.armL.thz-=2;break;//down
+		}
+	}
+	else if(objFlag==2)//right arm upper
+	{
+	str=(char*)("Right arm selected");
+		switch (c)
+		{
+			case 'u': 
+			//if(human.armR.thx+02>0 && human.armR.thx+02<150)
+				human.armR.thx+=02;break;//left
+			case 'j': 
+			//if(human.armR.thx-02>0 && human.armR.thx-02<150)
+				human.armR.thx-=02;break;//right
+			case 'y': human.armR.thy+=2;break;//up
+			case 'i':human.armR.thy-=2;break;//down
+			case 'h': human.armR.thz+=2;break;//up
+			case 'k':human.armR.thz-=2;break;//down
+		}
+	
+	}
+	else if(objFlag==3)//right arm lower
+	{
+	str=(char*)("Right lower arm selected");
+		switch (c)
+		{
+			case 'j': 
+			if(human.radioR.thz+02<0 && human.radioR.thz+02>-150)
+				human.radioR.thz+=02;
+			break;//left
+			case 'u': 
+			if(human.radioR.thz-02<0 && human.radioR.thz-02>-150)
+				human.radioR.thz-=02;
+			break;
+			
+		}
+	}
+	if(objFlag==5)//left leg lower
+	{
+	str=(char*)("Left lower leg selected");
+		switch (c)
+		{
+			case 'u': human.lowLegL.thz+=02;break;//left
+			case 'j': human.lowLegL.thz-=02;break;//right
+			
+		}
+	}
+	else if(objFlag==4)//left leg upper
+	{
+	str=(char*)("Left leg selected");
+	switch (c)
+		{
+			case 'h': human.legL.thx+=02;break;//left
+			case 'k': human.legL.thx-=02;break;//right
+			case 'i': human.legL.thy+=2;break;//up
+			case 'y':human.legL.thy-=2;break;//down
+			case 'u': human.legL.thz+=2;break;//up
+			case 'j':human.legL.thz-=2;break;//down
+		}
+	}
+	else if(objFlag==6)//right arm upper
+	{
+	str=(char*)("Right leg selected");
+		switch (c)
+		{
+			case 'h': human.legR.thx+=02;break;//left
+			case 'k': human.legR.thx-=02;break;//right
+			case 'i': human.legR.thy+=2;break;//up
+			case 'y':human.legR.thy-=2;break;//down
+			case 'u': human.legR.thz+=2;break;//up
+			case 'j':human.legR.thz-=2;break;//down
+		}
+	
+	}
+	
+	else if(objFlag==7)//right arm lower
+	{
+	str=(char*)("Right lower leg selected");
+		switch (c)
+		{
+			case 'u': human.lowLegR.thz+=02;break;//left
+			case 'j': human.lowLegR.thz-=02;break;//right
+			
+		}
+	}
+	else if(objFlag==8)//left hand
+	{
+	str=(char*)("Left hand selected");
+		switch (c)
+		{
+			case 'u': human.handL.thz+=02;break;//left
+			case 'j': human.handL.thz-=02;break;//right
+			
+		}
+	}
+	else if(objFlag==9)//right hand
+	{
+		str=(char*)("Right hand selected");
+		switch (c)
+		{
+			case 'u': human.handR.thz+=02;break;//left
+			case 'j': human.handR.thz-=02;break;//right
+			
+		}
+	}
+	else if(objFlag==10)//left toe
+	{
+	str=(char*)("Left toe selected");
+		switch (c)
+		{
+			case 'u': human.toeL.thz+=02;break;//left
+			case 'j': human.toeL.thz-=02;break;//right
+			
+		}
+	}
+	else if(objFlag==11)//right toe lower
+	{
+	str=(char*)("Right toe selected");
+		switch (c)
+		{
+			case 'u': human.toeR.thz+=02;break;//left
+			case 'j': human.toeR.thz-=02;break;//right
+			
+		}
+	}
+	else if(objFlag==12)//right arm lower
+	{
+	str=(char*)("Face selected");
+		switch (c)
+		{
+			case 'h': human.face1.thx+=02;break;//left
+			case 'k': human.face1.thx-=02;break;//right
+			case 'i': human.face1.thy+=2;break;//up
+			case 'y':human.face1.thy-=2;break;//down
+			case 'u': human.face1.thz+=2;break;//up
+			case 'j':human.face1.thz-=2;break;//down
+
+		}
+	}
+	else if(objFlag==13)//right arm lower
+	{
+	str=(char*)("Torso selected");
+		switch (c)
+		{
+			case 'h': human.tor.thx+=02;break;//left
+			case 'k': human.tor.thx-=02;break;//right
+			case 'i': human.tor.thy+=2;break;//up
+			case 'y': human.tor.thy-=2;break;//down
+			case 'u': human.tor.thz+=2;break;//up
+			case 'j': human.tor.thz-=2;break;//down
+
+		}
+	}
+	else if(objFlag==14)//right arm lower
+	{
+	str=(char*)("Hip selected");
+		switch (c)
+		{
+			case 'h': human.hip1.thx+=02;break;//left
+			case 'k': human.hip1.thx-=02;break;//right
+			case 'i': human.hip1.thy+=2;break;//up
+			case 'y': human.hip1.thy-=2;break;//down
+			case 'u': human.hip1.thz+=2;break;//up
+			case 'j': human.hip1.thz-=2;break;//down
+
+		}
+	}
+	
+	
+	else{}
+	
+	phi=(phi>360)?0:phi;
+	th=(th>360)?0:th;
+	orientMe();
+	
+		
+}
+
+
+void renderScene(void) 
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glutSolidTeapot(1);
+	//glEnable(GL_TEXTURE_2D);
+   	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+   	//glBindTexture(GL_TEXTURE_2D, texName);
+	
+	glMatrixMode(GL_MODELVIEW);
+	
+	glLoadIdentity();
+	gluLookAt(x, y, z, 
+		      x+lx,y+ly,z+lz,
+			  0.0f,1.0f,0.0f);
+	
+	render_bitmap_string(0,0.25*k, -0.41*k, GLUT_BITMAP_HELVETICA_18, str);
+	
+	
+	if(boxFlag==1)
+	{
+		glPushMatrix();
+			glTranslatef(0,-1.6,0.5);
+			glRotatef(90,0,1,0);
+			box.drawBox();
+		glPopMatrix();
+	}
+	
+	human.drawHuman();
+	//glutSolidTeapot(1);
+	glutSwapBuffers();
+
+}
+
+
+int main(int argc, char **argv)
+{
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGB);
+	glutInitWindowPosition(0,0);
+	glutInitWindowSize(1300,800);
+	glutCreateWindow("Assignment 2");
+	
+	gInit();
+	human.initModel("shirt.bmp","skin.bmp","face.bmp","jeans.bmp","palm.bmp","hat.bmp");
+	box.initTex();
+	x = k*cos(phi)*cos(th);
+	z = k*sin(phi)*cos(th);
+	y=k*sin(th);
+	lx = -cos(phi)*cos(th);
+	lz = -sin(phi)*cos(th);
+	ly=-sin(th);
+    	//armL.initList();
+	glutKeyboardFunc(inputKey);
+
+	glutDisplayFunc(renderScene);
+	glutIdleFunc(renderScene);
+	
+
+
+	glutReshapeFunc(changeSize);
+
+	glutMainLoop();
+
+	return(0);
+}
+
